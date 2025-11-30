@@ -1,0 +1,207 @@
+{% extends 'cmsapp/base.html' %} {% block title %}{{ club.name }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <!-- Club Information -->
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h2>{{ club.name }}</h2>
+          {% if is_leader or role == 'admin' %}
+          <a
+            href="{% url 'club_update' club.id %}"
+            class="btn btn-sm btn-outline-primary"
+          >
+            <i class="fas fa-edit"></i> Edit
+          </a>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if club.logo %}
+          <img
+            src="{{ club.logo.url }}"
+            alt="{{ club.name }} Logo"
+            class="img-fluid mb-3"
+            style="max-height: 200px"
+          />
+          {% endif %}
+          <p>{{ club.description }}</p>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted"
+              >Created by : {{ club.created_by.username }}</small
+            >
+            <small class="text-muted"
+              >Created on: {{ club.created_at|date:"F d, Y" }}</small
+            >
+          </div>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+          <div>
+            {% if is_member %}
+            <a
+              href="{% url 'club_leave' club.id %}"
+              class="btn btn-danger"
+              onclick="return confirm('Are you sure you want to leave this club?')"
+            >
+              <i class="fas fa-sign-out-alt"></i> Leave Club
+            </a>
+            {% elif has_pending_request %}
+            <button class="btn btn-secondary" disabled>
+              <i class="fas fa-clock"></i> Join Request Pending
+            </button>
+            {% else %}
+            <a
+              href="{% url 'club_join_request' club.id %}"
+              class="btn btn-success"
+            >
+              <i class="fas fa-user-plus"></i> Request to Join
+            </a>
+            {% endif %}
+          </div>
+          {% if is_member %}
+          <a href="{% url 'message_list' club.id %}" class="btn btn-primary">
+            <i class="fas fa-comments"></i> Club Messages
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Events Section -->
+      <div class="card mb-4">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h3>Upcoming Events</h3>
+          {% if is_leader or role == 'admin' %}
+          <a
+            href="{% url 'event_create' club.id %}"
+            class="btn btn-sm btn-outline-primary"
+          >
+            <i class="fas fa-plus"></i> Add Event
+          </a>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if events %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Date</th>
+                  <th>Location</th>
+                  <th>View Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for event in events %}
+                <tr>
+                  <td>{{ event.title }}</td>
+                  <td>{{ event.start_date|date:"M d, Y" }}</td>
+                  <td>{{ event.location }}</td>
+                  <td>
+                    <a
+                      href="{% url 'event_detail' event.id %}"
+                      class="btn btn-sm btn-outline-info"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted">No upcoming events for {{club.name}} club.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+      <!-- Members Section -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h3>{{club.name}} Members</h3>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            {% for membership in members %}
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              {{ membership.user.username }} {% if membership.is_leader %}
+              <span class="badge bg-primary">Leader</span>
+              <a
+                href="{% url 'leader_details' membership.user.id %}"
+                class="btn btn-sm btn-outline-info ms-2"
+              >
+                <i class="fas fa-user"></i> View Details
+              </a>
+              {% else %} {% if is_leader and not membership.is_leader %}
+              <a
+                href="{% url 'club_make_leader' club.id membership.user.id %}"
+                class="btn btn-sm btn-outline-primary"
+              >
+                Make Leader
+              </a>
+              {% endif %} {% endif %}
+            </li>
+            {% empty %}
+            <li class="list-group-item">No members yet.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Join Requests Section (Only visible to leaders and admins) -->
+      {% if is_leader or role == 'admin' %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h3>Join Requests</h3>
+        </div>
+        <div class="card-body">
+          {% if join_requests %}
+          <ul class="list-group">
+            {% for request in join_requests %}
+            <li class="list-group-item">
+              <div
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <strong>{{ request.user.username }}</strong>
+                <small>{{ request.timestamp|date:"M d, Y" }}</small>
+              </div>
+              {% if request.message %}
+              <p class="mb-2">{{ request.message }}</p>
+              {% endif %}
+              <div class="d-flex justify-content-end">
+                <a
+                  href="{% url 'club_join_request_handle' request.id 'approve' %}"
+                  class="btn btn-sm btn-success me-2"
+                >
+                  <i class="fas fa-check"></i> Approve
+                </a>
+                <a
+                  href="{% url 'club_join_request_handle' request.id 'reject' %}"
+                  class="btn btn-sm btn-danger"
+                >
+                  <i class="fas fa-times"></i> Reject
+                </a>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted">No pending join requests.</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,531 @@
+{% extends 'cmsapp/base.html' %} {% block title %}Admin Dashboard - Club
+Management System{% endblock %} {% block extra_css %}
+<style>
+  .dashboard-card {
+    border-left: 4px solid #007bff;
+    transition: transform 0.3s;
+  }
+  .dashboard-card:hover {
+    transform: translateY(-5px);
+  }
+  .dashboard-card.members {
+    border-left-color: #28a745;
+  }
+  .dashboard-card.leaders {
+    border-left-color: #6f42c1;
+  }
+  .dashboard-card.events {
+    border-left-color: #fd7e14;
+  }
+  .dashboard-card.messages {
+    border-left-color: #20c997;
+  }
+  .table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Admin Dashboard</h1>
+  <a href="{% url 'home' %}" class="btn btn-outline-primary"
+    ><i class="fas fa-arrow-left"></i> Back to Home</a
+  >
+</div>
+
+<!-- Stats Cards -->
+<div class="d-flex flex-wrap gap-3 mb-4">
+  <div class="flex-fill" style="min-width: 200px;">
+    <div class="card dashboard-card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-muted">Total Clubs</h6>
+            <h2 class="mb-0">{{ total_clubs }}</h2>
+          </div>
+          <div class="bg-primary rounded p-3 text-white">
+            <i class="fas fa-users-cog"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex-fill" style="min-width: 200px;">
+    <div class="card dashboard-card members shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-muted">Members</h6>
+            <h2 class="mb-0">{{ total_members }}</h2>
+          </div>
+          <div class="bg-success rounded p-3 text-white">
+            <i class="fas fa-user-friends"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex-fill" style="min-width: 200px;">
+    <div class="card dashboard-card leaders shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-muted">Leaders</h6>
+            <h2 class="mb-0">{{ total_leaders }}</h2>
+          </div>
+          <div class="bg-danger rounded p-3 text-white">
+            <i class="fas fa-user-tie"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex-fill" style="min-width: 200px;">
+    <div class="card dashboard-card events shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="text-muted">Events</h6>
+            <h2 class="mb-0">{{ total_events }}</h2>
+          </div>
+          <div class="bg-warning rounded p-3 text-white">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="row mb-4">
+  <div class="col-md-6 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white py-2">
+        <h6 class="mb-0">Events by Month ({{ months.0 }} - {{ months.11 }})</h6>
+      </div>
+      <div class="card-body py-2">
+        <canvas id="eventsChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-success text-white py-2">
+        <h6 class="mb-0">User Registrations by Month</h6>
+      </div>
+      <div class="card-body py-2">
+        <canvas id="usersChart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Monitoring Charts -->
+<div class="row mb-3">
+  <div class="col-md-6 mb-3">
+    <div class="card shadow-sm">
+      <div class="card-header bg-warning text-dark py-1">
+        <h6 class="mb-0">Club Status Distribution</h6>
+      </div>
+      <div class="card-body py-2">
+        <canvas id="clubStatusChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 mb-3">
+    <div class="card shadow-sm">
+      <div class="card-header bg-info text-white py-1">
+        <h6 class="mb-0">User Role Distribution</h6>
+      </div>
+      <div class="card-body py-2">
+        <canvas id="userRoleChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live Activity Monitor -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Live Activity Monitor (Last 7 Days)</h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-4">
+            <div class="alert alert-primary">
+              <h4 class="alert-heading">{{ recent_events }}</h4>
+              <p class="mb-0">New Events</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="alert alert-success">
+              <h4 class="alert-heading">{{ recent_clubs }}</h4>
+              <p class="mb-0">New Clubs</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="alert alert-info">
+              <h4 class="alert-heading">{{ recent_users }}</h4>
+              <p class="mb-0">New Users</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Pending Club Approvals -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">Pending Club Approvals</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Club Name</th>
+                <th>Created By</th>
+                <th>Created Date</th>
+                <th>View Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for club in pending_clubs %}
+              <tr>
+                <td>{{ club.name }}</td>
+                <td>{{ club.created_by.username }}</td>
+                <td>{{ club.created_at|date:"M d, Y" }}</td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a
+                      href="{% url 'club_approval' club.id 'approve' %}"
+                      class="btn btn-sm btn-success"
+                    >
+                      <i class="fas fa-check"></i> Approve
+                    </a>
+                    <a
+                      href="{% url 'club_approval' club.id 'reject' %}"
+                      class="btn btn-sm btn-danger"
+                    >
+                      <i class="fas fa-times"></i> Reject
+                    </a>
+                    <a
+                      href="{% url 'club_detail' club.id %}"
+                      class="btn btn-sm btn-info"
+                    >
+                      <i class="fas fa-eye"></i> View
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="text-center">
+                  No pending club approvals
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pending Join Requests -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Pending Join Requests</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Club</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>View Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for request in recent_join_requests %}
+              <tr>
+                <td>{{ request.user.username }}</td>
+                <td>{{ request.club.name }}</td>
+                <td>{{ request.message|truncatechars:50 }}</td>
+                <td>{{ request.timestamp|date:"M d, Y" }}</td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a
+                      href="{% url 'club_join_request_handle' request.id 'approve' %}"
+                      class="btn btn-sm btn-success"
+                    >
+                      <i class="fas fa-check"></i> Approve
+                    </a>
+                    <a
+                      href="{% url 'club_join_request_handle' request.id 'reject' %}"
+                      class="btn btn-sm btn-danger"
+                    >
+                      <i class="fas fa-times"></i> Reject
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center">
+                  No pending join requests
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Top 10 Leaders for Promotion -->
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-trophy"></i> Top 10 Leaders for Admin Promotion
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover leaderboard-table">
+            <thead class="table-dark">
+              <tr>
+                <th>Rank</th>
+                <th>Leader Name</th>
+                <th>Score</th>
+                <th>Communication</th>
+                <th>Experience</th>
+                <th>Events</th>
+                <th>Clubs</th>
+                <th>Total Members</th>
+                <th>Account Age</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for leader_data in top_leaders %}
+              <tr>
+                <td>
+                  {% if forloop.counter <= 3 %}
+                    <span class="badge bg-warning text-dark">
+                      <i class="fas fa-medal"></i> {{ forloop.counter }}
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ forloop.counter }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <strong>{{ leader_data.leader.username }}</strong>
+                  <br>
+                  <small class="text-muted">{{ leader_data.leader.email }}</small>
+                </td>
+                <td>
+                  <span class="badge bg-primary fs-6">{{ leader_data.score }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-info">{{ leader_data.communication_score }}</span>
+                  <small class="d-block text-muted">messages</small>
+                </td>
+                <td>
+                  <span class="badge bg-secondary">{{ leader_data.experience_score }}</span>
+                  <small class="d-block text-muted">months</small>
+                </td>
+                <td>
+                  <span class="badge bg-success">{{ leader_data.events_score }}</span>
+                  <small class="d-block text-muted">events</small>
+                </td>
+                <td>
+                  <span class="badge bg-primary">{{ leader_data.clubs_count }}</span>
+                </td>
+                <td>
+                  <span class="badge bg-secondary">{{ leader_data.total_members }}</span>
+                </td>
+                <td>
+                  <small class="text-muted">{{ leader_data.account_age_months }} months</small>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="{% url 'user_profile' leader_data.leader.id %}" class="btn btn-sm btn-outline-primary" title="View Profile">
+                      <i class="fas fa-user"></i>
+                    </a>
+                    <a href="{% url 'promote_to_admin' leader_data.leader.id %}" class="btn btn-sm btn-success" title="Promote to Admin" onclick="return confirm('Are you sure you want to promote {{ leader_data.leader.username }} to admin?')">
+                      <i class="fas fa-arrow-up"></i> Promote
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="10" class="text-center text-muted">
+                  <i class="fas fa-info-circle"></i> No leaders found for promotion evaluation
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="alert alert-info mt-3">
+          <small>
+            <strong>Scoring Formula:</strong> Score = (Communication × 0.4) + (Experience × 0.3) + (Events × 0.3)
+            <br>
+            <strong>Communication:</strong> Messages sent in last 30 days | 
+            <strong>Experience:</strong> Account age in months (max 24) | 
+            <strong>Events:</strong> Events organized by leader's clubs
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Events Chart
+  const eventsCtx = document.getElementById('eventsChart').getContext('2d');
+  const eventsChart = new Chart(eventsCtx, {
+      type: 'bar',
+      data: {
+          labels: {{ months|safe }},
+          datasets: [{
+              label: 'Events',
+              data: {{ events_by_month }},
+              backgroundColor: 'rgba(255, 159, 64, 0.7)',
+              borderColor: 'rgba(255, 159, 64, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+          responsive: true,
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  ticks: {
+                      stepSize: 1
+                  }
+              }
+          }
+      }
+  });
+
+  // Users Chart
+  const usersCtx = document.getElementById('usersChart').getContext('2d');
+  const usersChart = new Chart(usersCtx, {
+      type: 'line',
+      data: {
+          labels: {{ months|safe }},
+          datasets: [{
+              label: 'New Users',
+              data: {{ users_by_month }},
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 2,
+              tension: 0.1
+          }]
+      },
+      options: {
+          responsive: true,
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  ticks: {
+                      stepSize: 1
+                  }
+              }
+          }
+      }
+  });
+
+  // Club Status Distribution Pie Chart
+  const clubStatusCtx = document.getElementById('clubStatusChart').getContext('2d');
+  const clubStatusChart = new Chart(clubStatusCtx, {
+      type: 'pie',
+      data: {
+          labels: ['Approved', 'Pending'],
+          datasets: [{
+              data: [{{ approved_clubs }}, {{ pending_clubs_count }}],
+              backgroundColor: [
+                  'rgba(40, 167, 69, 0.8)',
+                  'rgba(255, 193, 7, 0.8)'
+              ],
+              borderColor: [
+                  'rgba(40, 167, 69, 1)',
+                  'rgba(255, 193, 7, 1)'
+              ],
+              borderWidth: 2
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: {
+              legend: {
+                  position: 'bottom',
+              },
+              title: {
+                  display: true,
+                  text: 'Club Status Distribution'
+              }
+          }
+      }
+  });
+
+  // User Role Distribution Pie Chart
+  const userRoleCtx = document.getElementById('userRoleChart').getContext('2d');
+  const userRoleChart = new Chart(userRoleCtx, {
+      type: 'pie',
+      data: {
+          labels: ['Admins', 'Leaders', 'Members'],
+          datasets: [{
+              data: [{{ admin_count }}, {{ leader_count }}, {{ member_count }}],
+              backgroundColor: [
+                  'rgba(220, 53, 69, 0.8)',
+                  'rgba(111, 66, 193, 0.8)',
+                  'rgba(23, 162, 184, 0.8)'
+              ],
+              borderColor: [
+                  'rgba(220, 53, 69, 1)',
+                  'rgba(111, 66, 193, 1)',
+                  'rgba(23, 162, 184, 1)'
+              ],
+              borderWidth: 2
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: {
+              legend: {
+                  position: 'bottom',
+              },
+              title: {
+                  display: true,
+                  text: 'User Role Distribution'
+              }
+          }
+      }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,9 @@
+from django.apps import AppConfig
+
+
+class CmsappConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'cmsapp'
+    
+    def ready(self):
+        import cmsapp.signals

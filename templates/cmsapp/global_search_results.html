@@ -1,0 +1,100 @@
+{% extends 'cmsapp/base.html' %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card mb-4">
+        <div class="card-header" style="background-color: #fd7e14; color: white;">
+            <h4><i class="fas fa-search"></i> Search Results for "{{ query }}"</h4>
+        </div>
+        <div class="card-body">
+            {% if not clubs and not events %}
+                <div class="alert alert-info">
+                    <p>No results found for "{{ query }}". Try a different search term.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Clubs Section -->
+    {% if clubs %}
+    <div class="card mb-4">
+        <div class="card-header" style="background-color: #fd7e14; color: white;">
+            <h5><i class="fas fa-users"></i> Clubs ({{ clubs|length }})</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for club in clubs %}
+                <div class="col-md-4 mb-4">
+                    <div class="card club-card h-100">
+                        {% if club.logo %}
+                        <img src="{{ club.logo.url }}" class="card-img-top" alt="{{ club.name }} Logo">
+                        {% else %}
+                        <div class="card-img-top bg-light text-center py-5">
+                            <i class="fas fa-users fa-4x text-secondary"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ club.name }}</h5>
+                            <p class="card-text">{{ club.description|truncatechars:100 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Created: {{ club.created_at|date:"M d, Y" }}</small>
+                                {% if club.is_approved %}
+                                <span class="badge" style="background-color: #fd7e14; color: white;">Approved</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pending Approval</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'club_detail' club.id %}" class="btn w-100" style="background-color: #fd7e14; color: white;">View Details</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Events Section -->
+    {% if events %}
+    <div class="card mb-4">
+        <div class="card-header" style="background-color: #fd7e14; color: white;">
+            <h5><i class="fas fa-calendar-alt"></i> Events ({{ events|length }})</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Club</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td>{{ event.title }}</td>
+                            <td><a href="{% url 'club_detail' event.club.id %}" style="color: #fd7e14;">{{ event.club.name }}</a></td>
+                            <td>{{ event.start_date|date:"M d, Y" }} at {{ event.start_date|date:"g:i a" }}</td>
+                            <td>{{ event.location }}</td>
+                            <td>
+                                <a href="{% url 'event_detail' event.id %}" class="btn btn-sm" style="background-color: #fd7e14; color: white;">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

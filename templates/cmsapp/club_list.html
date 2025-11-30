@@ -1,0 +1,72 @@
+{% extends 'cmsapp/base.html' %} {% block title %}Clubs{% endblock %} {% block
+content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Clubs</h1>
+    {% if role == 'admin' or role == 'leader' %}
+    <a href="{% url 'club_create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Create New Club
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form action="{% url 'club_search' %}" method="get" class="d-flex">
+        <input
+          type="text"
+          name="q"
+          class="form-control me-2"
+          placeholder="Search clubs by name or description..."
+          value="{{ query|default:'' }}"
+        />
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if clubs %}
+  <div class="row">
+    {% for club in clubs %}
+    <div class="col-md-4 mb-4">
+      <div class="card club-tile h-100">
+        {% if club.logo %}
+        <div
+          class="club-tile-bg"
+          style="background-image: url('{{ club.logo.url }}')"
+        ></div>
+        {% else %}
+        <div class="club-tile-bg no-logo"></div>
+        {% endif %}
+        <div class="club-tile-name">{{ club.name }}</div>
+        <div class="club-tile-overlay">
+          <div class="club-tile-content">
+            <h5 class="mb-1">{{ club.name }}</h5>
+            <div class="small">Leader: {{ club.created_by.username }}</div>
+            <div class="small">
+              Created: {{ club.created_at|date:"M d, Y" }}
+            </div>
+            <a
+              href="{% url 'club_detail' club.id %}"
+              class="btn btn-primary btn-sm mt-2"
+              >View Details</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    <p>
+      No clubs available. {% if role == 'admin' or role == 'leader' %}Create a
+      new club to get started!{% endif %}
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

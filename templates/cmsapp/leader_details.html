@@ -1,0 +1,190 @@
+{% extends 'cmsapp/base.html' %} {% block title %}Leader Details - {{ leader_user.username }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2>{{ leader_user.get_full_name|default:leader_user.username }} - Leader Details</h2>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4 text-center">
+              {% if leader_profile.profile_picture %}
+              <img
+                src="{{ leader_profile.profile_picture.url }}"
+                alt="{{ leader_user.username }}'s Profile Picture"
+                class="img-fluid rounded-circle mb-3"
+                style="max-width: 200px; max-height: 200px"
+              />
+              {% else %}
+              <div
+                class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mb-3"
+                style="width: 200px; height: 200px; margin: 0 auto"
+              >
+                <i class="fas fa-user fa-4x text-white"></i>
+              </div>
+              {% endif %}
+              <h4>{{ leader_user.get_full_name|default:leader_user.username }}</h4>
+              <p class="text-muted">@{{ leader_user.username }}</p>
+            </div>
+            <div class="col-md-8">
+              <h5>Contact Information</h5>
+              <ul class="list-unstyled mb-4">
+                <li><strong>Email:</strong> {{ leader_user.email }}</li>
+                {% if leader_profile.phone_number %}
+                <li><strong>Phone:</strong> {{ leader_profile.phone_number }}</li>
+                {% endif %}
+                <li><strong>Role:</strong> {{ leader_profile.role|title }}</li>
+                <li><strong>Member Since:</strong> {{ leader_profile.date_joined|date:"F d, Y" }}</li>
+              </ul>
+
+              {% if leader_profile.bio %}
+              <h5>About</h5>
+              <p>{{ leader_profile.bio }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Education Section -->
+      {% if leader_profile.education or leader_profile.education_image %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Education</h5>
+        </div>
+        <div class="card-body">
+          {% if leader_profile.education %}
+          <p>{{ leader_profile.education }}</p>
+          {% endif %} {% if leader_profile.education_image %}
+          <div class="mt-3">
+            <img
+              src="{{ leader_profile.education_image.url }}"
+              alt="Education Certificate"
+              class="img-fluid"
+              style="max-height: 300px"
+            />
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Experience Section -->
+      {% if leader_profile.experience or leader_profile.experience_image %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Experience</h5>
+        </div>
+        <div class="card-body">
+          {% if leader_profile.experience %}
+          <p>{{ leader_profile.experience }}</p>
+          {% endif %} {% if leader_profile.experience_image %}
+          <div class="mt-3">
+            <img
+              src="{{ leader_profile.experience_image.url }}"
+              alt="Experience Certificate"
+              class="img-fluid"
+              style="max-height: 300px"
+            />
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Achievements Section -->
+      {% if leader_profile.achievements or leader_profile.achievements_image %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Achievements</h5>
+        </div>
+        <div class="card-body">
+          {% if leader_profile.achievements %}
+          <p>{{ leader_profile.achievements }}</p>
+          {% endif %} {% if leader_profile.achievements_image %}
+          <div class="mt-3">
+            <img
+              src="{{ leader_profile.achievements_image.url }}"
+              alt="Achievements Certificate"
+              class="img-fluid"
+              style="max-height: 300px"
+            />
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Certificates Section -->
+      {% if leader_profile.certificates or leader_profile.certificates_image %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Certificates</h5>
+        </div>
+        <div class="card-body">
+          {% if leader_profile.certificates %}
+          <p>{{ leader_profile.certificates }}</p>
+          {% endif %} {% if leader_profile.certificates_image %}
+          <div class="mt-3">
+            <img
+              src="{{ leader_profile.certificates_image.url }}"
+              alt="Certificates"
+              class="img-fluid"
+              style="max-height: 300px"
+            />
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+      <!-- Clubs Led Section -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5>Clubs Led</h5>
+        </div>
+        <div class="card-body">
+          {% if leader_clubs %}
+          <ul class="list-group">
+            {% for club in leader_clubs %}
+            <li class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6>{{ club.name }}</h6>
+                  <small class="text-muted">Created: {{ club.created_at|date:"M d, Y" }}</small>
+                </div>
+                {% if club.logo %}
+                <img
+                  src="{{ club.logo.url }}"
+                  alt="{{ club.name }} logo"
+                  class="rounded"
+                  style="width: 40px; height: 40px; object-fit: cover"
+                />
+                {% endif %}
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted">No clubs led yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Back Button -->
+      <div class="card">
+        <div class="card-body text-center">
+          <a href="javascript:history.back()" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

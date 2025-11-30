@@ -1,0 +1,303 @@
+{% extends 'cmsapp/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Club Messages - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'club_detail' club.id %}">{{ club.name }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Messages</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-lg">
+                <!-- Chat Header -->
+                <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <div class="d-flex align-items-center">
+                        {% if club.logo %}
+                            <img src="{{ club.logo.url }}" alt="{{ club.name }}" class="rounded-circle mr-3" width="45" height="45" style="object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center mr-3" width="45" height="45" style="width: 45px; height: 45px;">
+                                <i class="fas fa-users fa-lg"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="mb-0">{{ club.name }}</h4>
+                            <small class="opacity-75">{{ members.count }} members</small>
+                        </div>
+                    </div>
+                    <a href="{% url 'club_detail' club.id %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left mr-1"></i> Back to Club
+                    </a>
+                </div>
+
+                <div class="card-body p-0">
+                    <!-- Messages Container -->
+                    <div class="messages-container" id="messagesContainer">
+                        {% if club_messages %}
+                            {% for message in club_messages %}
+                                <div class="message-item px-4 py-3 {% if message.sender == user %}bg-light{% endif %}" data-message-id="{{ message.id }}">
+                                    <div class="d-flex {% if message.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                                        <div class="message-bubble {% if message.sender == user %}message-sent{% else %}message-received{% endif %}">
+                                            <!-- Message Header -->
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    {% if message.sender != user %}
+                                                        <div class="message-avatar mr-2">
+                                                            {% if message.sender.userprofile.profile_picture %}
+                                                                <img src="{{ message.sender.userprofile.profile_picture.url }}" alt="{{ message.sender.username }}" class="rounded-circle" width="32" height="32" style="object-fit: cover;">
+                                                            {% else %}
+                                                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 14px;">
+                                                                    {{ message.sender.username|first|upper }}
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong class="message-sender">{{ message.sender.username }}</strong>
+                                                        <small class="text-muted ml-2 message-time">{{ message.timestamp|date:"g:i A" }}</small>
+                                                    </div>
+                                                </div>
+                                                {% if message.sender == user or is_leader or role == 'admin' %}
+                                                    <div class="message-actions">
+                                                        <form method="post" action="{% url 'message_delete' message.id %}" class="d-inline">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0 ml-2" onclick="return confirm('Delete this message?')" title="Delete message">
+                                                                <i class="fas fa-times fa-xs"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <!-- Message Content -->
+                                            <div class="message-content">
+                                                {{ message.content|linebreaksbr }}
+                                            </div>
+                                            <!-- Message Footer -->
+                                            <div class="message-footer text-right mt-2">
+                                                <small class="text-muted">
+                                                    {% if message.timestamp.date == today %}
+                                                        Today {{ message.timestamp|date:"g:i A" }}
+                                                    {% else %}
+                                                        {{ message.timestamp|date:"M d, g:i A" }}
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <div class="mb-4">
+                                    <i class="fas fa-comments fa-5x text-muted opacity-50"></i>
+                                </div>
+                                <h5 class="text-muted mb-2">No messages yet</h5>
+                                <p class="text-muted">Be the first to start a conversation in {{ club.name }}!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Message Input -->
+                    <div class="message-input-container border-top">
+                        <form method="post" class="p-3" id="messageForm">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                {% render_field form.content class="form-control form-control-lg border-0" placeholder="Type your message here..." rows="1" %}
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-primary btn-lg px-4" id="sendButton">
+                                        <i class="fas fa-paper-plane"></i>
+                                        <span class="ml-1 d-none d-sm-inline">Send</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    }
+    
+    .messages-container {
+        height: 60vh;
+        overflow-y: auto;
+        background: #f8f9fa;
+        scroll-behavior: smooth;
+    }
+    
+    .message-item {
+        transition: background-color 0.2s ease;
+    }
+    
+    .message-item:hover {
+        background-color: rgba(0, 123, 255, 0.05) !important;
+    }
+    
+    .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        position: relative;
+        word-wrap: break-word;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .message-sent {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+    
+    .message-received {
+        background: white;
+        color: #333;
+        border: 1px solid #e9ecef;
+        border-bottom-left-radius: 4px;
+    }
+    
+    .message-sent .message-sender,
+    .message-sent .message-time,
+    .message-sent .message-footer small {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .message-avatar {
+        flex-shrink: 0;
+    }
+    
+    .message-content {
+        line-height: 1.4;
+        font-size: 15px;
+    }
+    
+    .message-input-container {
+        background: white;
+    }
+    
+    .message-input-container .form-control {
+        resize: none;
+        font-size: 16px;
+        padding: 12px 16px;
+        border-radius: 25px;
+        background: #f8f9fa;
+        transition: all 0.2s ease;
+    }
+    
+    .message-input-container .form-control:focus {
+        background: white;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        border-color: #007bff;
+    }
+    
+    .message-input-container .btn-primary {
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .message-input-container .btn-primary:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    }
+    
+    .message-actions .btn-link {
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+    }
+    
+    .message-actions .btn-link:hover {
+        opacity: 1;
+    }
+    
+    /* Scrollbar styling */
+    .messages-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .messages-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .messages-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .messages-container::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .message-bubble {
+            max-width: 85%;
+        }
+        
+        .messages-container {
+            height: 50vh;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-scroll to bottom
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Auto-resize textarea
+    const messageInput = document.querySelector('textarea[name="content"]');
+    if (messageInput) {
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // Submit on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('messageForm').submit();
+            }
+        });
+    }
+    
+    // Add loading state to send button
+    const messageForm = document.getElementById('messageForm');
+    const sendButton = document.getElementById('sendButton');
+    
+    if (messageForm && sendButton) {
+        messageForm.addEventListener('submit', function() {
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        });
+    }
+});
+</script>
+{% endblock %}

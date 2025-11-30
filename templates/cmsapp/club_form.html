@@ -1,0 +1,52 @@
+{% extends 'cmsapp/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{{ action }} Club{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>{{ action }} Club</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">Club Name</label>
+                            {{ form.name.errors }}
+                            {% render_field form.name class="form-control" %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            {{ form.description.errors }}
+                            {% render_field form.description class="form-control" %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_logo" class="form-label">Club Logo</label>
+                            {{ form.logo.errors }}
+                            {% render_field form.logo class="form-control" %}
+                            {% if club and club.logo %}
+                            <div class="mt-2">
+                                <p>Current logo:</p>
+                                <img src="{{ club.logo.url }}" alt="Current Logo" class="img-thumbnail" style="max-height: 100px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'club_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Clubs
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {{ action }} Club
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
