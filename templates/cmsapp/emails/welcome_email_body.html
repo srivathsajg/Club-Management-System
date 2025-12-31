@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+        }
+
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #fd7e14;
+        }
+
+        .header h1 {
+            color: #fd7e14;
+            margin: 0;
+        }
+
+        .content {
+            padding: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.8em;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #fd7e14;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CLUB MATRIX</h1>
+        </div>
+        <div class="content">
+            <p>Hi <strong>{{ username }}</strong>,</p>
+            <p>Welcome to <strong>Club Matrix</strong>! We're thrilled to have you as a part of our vibrant community.
+            </p>
+            <p>Join clubs, participate in events, and connect with individuals who share your passions. Your journey
+                starts here!</p>
+            <p style="text-align: center;">
+                <a href="{{ login_url }}" class="button">Visit Your Dashboard</a>
+            </p>
+            <p>If you have any questions, feel free to reply to this email.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 Club Matrix System. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+
+</html>

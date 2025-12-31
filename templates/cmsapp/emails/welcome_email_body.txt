@@ -1,0 +1,10 @@
+Hi {{ username }},
+
+Welcome to Club Matrix! We're thrilled to have you as a part of our community.
+
+Whether you're here to lead a club, join exciting events, or connect with like-minded individuals, we hope you have an incredible experience.
+
+Login to your dashboard to get started: {{ login_url }}
+
+Best regards,
+The Club Matrix Team

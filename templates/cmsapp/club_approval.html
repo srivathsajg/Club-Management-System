@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Club Approval{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Club Approval Request</h2>
+    <hr>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>{{ club.name }}</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Description:</strong> {{ club.description }}</p>
+            <p><strong>Created by:</strong> {{ club.created_by.username }}</p>
+            <p><strong>Creation date:</strong> {{ club.created_at|date:"Y-m-d" }}</p>
+            
+            <h4>Leader's Information</h4>
+            <p><strong>Full Name:</strong> {{ club.created_by.get_full_name }}</p>
+            <p><strong>Email:</strong> {{ club.created_by.email }}</p>
+            
+            {% if club.created_by.profile %}
+                <p><strong>Phone Number:</strong> {{ club.created_by.profile.phone_number }}</p>
+                <p><strong>Experience:</strong> {{ club.created_by.profile.experience }}</p>
+                <p><strong>Achievements:</strong> {{ club.created_by.profile.achievements }}</p>
+                
+                {% if club.created_by.profile.experience_image %}
+                    <p><strong>Experience Image:</strong></p>
+                    <img src="{{ club.created_by.profile.experience_image.url }}" alt="Experience Image" style="max-width: 300px;">
+                {% endif %}
+                
+                {% if club.created_by.profile.achievements_image %}
+                    <p><strong>Achievements Image:</strong></p>
+                    <img src="{{ club.created_by.profile.achievements_image.url }}" alt="Achievements Image" style="max-width: 300px;">
+                {% endif %}
+                
+                {% if club.created_by.profile.certificates_image %}
+                    <p><strong>Certificates Image:</strong></p>
+                    <img src="{{ club.created_by.profile.certificates_image.url }}" alt="Certificates Image" style="max-width: 300px;">
+                {% endif %}
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <a href="{% url 'club_approval' club.id 'approve' %}" class="btn btn-success">Approve</a>
+            <a href="{% url 'club_approval' club.id 'reject' %}" class="btn btn-danger">Reject</a>
+            <a href="{% url 'pending_clubs' %}" class="btn btn-secondary">Back to Pending List</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

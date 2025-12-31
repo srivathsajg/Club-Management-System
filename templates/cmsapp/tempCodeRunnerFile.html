@@ -1,0 +1,81 @@
+{% extends 'cmsapp/base.html' %} {% block title %}Clubs{% endblock %} {% block
+content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Clubs</h1>
+    {% if role == 'admin' or role == 'leader' %}
+    <a href="{% url 'club_create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Create New Club
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form action="{% url 'club_search' %}" method="get" class="d-flex">
+        <input
+          type="text"
+          name="q"
+          class="form-control me-2"
+          placeholder="Search clubs by name or description..."
+          value="{{ query|default:'' }}"
+        />
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if clubs %}
+  <div class="row">
+    {% for club in clubs %}
+    <div class="col-md-4 mb-4">
+      <div class="card club-card h-100">
+        {% if club.logo %}
+        <img
+          src="{{ club.logo.url }}"
+          class="card-img-top"
+          alt="{{ club.name }} Logo"
+        />
+        {% else %}
+        <div class="card-img-top bg-light text-center py-5">
+          <i class="fas fa-users fa-4x text-secondary"></i>
+        </div>
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ club.name }}</h5>
+          <p class="card-text">{{ club.description|truncatechars:100 }}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted"
+              >Created: {{ club.created_at|date:"M d, Y" }}</small
+            >
+            {% if club.is_approved %}
+            <span class="badge bg-success">Approved</span>
+            {% else %}
+            <span class="badge bg-warning text-dark">Pending Approval</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <a
+            href="{% url 'club_detail' club.id %}"
+            class="btn btn-outline-primary w-100"
+            >View Details</a
+          >
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    <p>
+      No clubs available. {% if role == 'admin' or role == 'leader' %}Create a
+      new club to get started!{% endif %}
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'cmsapp/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Search Bar -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form action="{% url 'event_search' %}" method="get" class="d-flex">
+                        <input type="text" name="q" class="form-control me-2" placeholder="Search events by title, description or location..." value="{{ query|default:'' }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-calendar-alt"></i> Upcoming Events</h4>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Club</th>
+                                        <th>Date</th>
+                                        <th>Location</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for event in upcoming_events %}
+                                    <tr>
+                                        <td>{{ event.title }}</td>
+                                        <td><a href="{% url 'club_detail' event.club.id %}">{{ event.club.name }}</a></td>
+                                        <td>{{ event.start_date|date:"M d, Y" }} at {{ event.start_date|date:"g:i a" }}</td>
+                                        <td>{{ event.location }}</td>
+                                        <td>
+                                            <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p>No upcoming events found.</p>
+                            {% if role == 'admin' or role == 'leader' %}
+                                <p>As a {{ role }}, you can create events for your clubs.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

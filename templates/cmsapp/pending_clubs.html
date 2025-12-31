@@ -1,0 +1,37 @@
+{% extends 'cmsapp/base.html' %}
+
+{% block title %}Pending Club Approvals{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Pending Club Approvals</h2>
+    {% if pending_clubs %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Club Name</th>
+                        <th>Created By</th>
+                        <th>Date Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for club in pending_clubs %}
+                        <tr>
+                            <td>{{ club.name }}</td>
+                            <td>{{ club.created_by.username }}</td>
+                            <td>{{ club.created_at|date:"Y-m-d" }}</td>
+                            <td>
+                                <a href="{% url 'club_approval_detail' club.id %}" class="btn btn-primary btn-sm">View Details</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No pending club approvals.</p>
+    {% endif %}
+</div>
+{% endblock %}

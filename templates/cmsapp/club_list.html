@@ -1,0 +1,147 @@
+{% extends 'cmsapp/base.html' %} {% block title %}Clubs{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Square Card Fix */
+  .club-tile {
+    position: relative;
+    display: block !important;
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background-color: #f8f9fa;
+    border: none;
+  }
+
+  .club-tile:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    z-index: 10;
+  }
+
+  .club-tile-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.6s ease;
+  }
+
+  .club-tile:hover .club-tile-bg {
+    transform: scale(1.1);
+  }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 40px, 0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .animate-card {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .club-tile-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.9) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .club-tile-content {
+    color: #fff;
+    transform: translateY(15px);
+    transition: transform 0.4s ease;
+  }
+
+  .club-tile:hover .club-tile-content {
+    transform: translateY(0);
+  }
+
+  .club-tile-content h5 {
+    font-family: 'Share Tech Mono', monospace;
+    color: #ffd700;
+    margin-bottom: 5px;
+  }
+
+  .club-tile-name {
+    display: none;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Clubs</h1>
+    {% if role == 'admin' or role == 'leader' %}
+    <a href="{% url 'club_create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Create New Club
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Search Bar -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <form action="{% url 'club_search' %}" method="get" class="d-flex">
+        <input type="text" name="q" class="form-control me-2" placeholder="Search clubs by name or description..."
+          value="{{ query|default:'' }}" />
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-search"></i> Search
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if clubs %}
+  <div class="row">
+    {% for club in clubs %}
+    <div class="col-sm-6 col-lg-3 mb-4 animate-card" style="animation-delay: {{ forloop.counter0|add:1 }}00ms;">
+      <div class="card club-tile">
+        {% if club.logo %}
+        <div class="club-tile-bg" style="background-image: url('{{ club.logo.url }}')"></div>
+        {% else %}
+        <div class="club-tile-bg no-logo"></div>
+        {% endif %}
+        <div class="club-tile-name">{{ club.name }}</div>
+        <div class="club-tile-overlay">
+          <div class="club-tile-content">
+            <h5 class="mb-1">{{ club.name }}</h5>
+            <div class="small">Leader: {{ club.created_by.username }}</div>
+            <div class="small">
+              Created: {{ club.created_at|date:"M d, Y" }}
+            </div>
+            <a href="{% url 'club_detail' club.id %}" class="btn btn-primary btn-sm mt-2">View Details</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    <p>
+      No clubs available. {% if role == 'admin' or role == 'leader' %}Create a
+      new club to get started!{% endif %}
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

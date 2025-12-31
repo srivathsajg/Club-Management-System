@@ -1,0 +1,60 @@
+{% extends 'cmsapp/base.html' %}
+
+{% block title %}Profile - Club Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">User Profile</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4 mb-md-0">
+                        {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="max-width: 150px;">
+                        {% else %}
+                        <div class="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                            <i class="fas fa-user fa-5x text-secondary"></i>
+                        </div>
+                        {% endif %}
+                        <h4>{{ user.username }}</h4>
+                        <p class="badge bg-primary">{{ user.profile.get_role_display }}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="id_profile_picture" class="form-label">Profile Picture</label>
+                                <input type="file" name="profile_picture" class="form-control" id="id_profile_picture">
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_bio" class="form-label">Bio</label>
+                                <textarea name="bio" class="form-control" id="id_bio" rows="4">{{ user.profile.bio }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                                <div class="form-text">Email cannot be changed here.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Role</label>
+                                <input type="text" class="form-control" value="{{ user.profile.get_role_display }}" disabled>
+                                <div class="form-text">Role cannot be changed.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Member Since</label>
+                                <input type="text" class="form-control" value="{{ user.profile.date_joined|date:'F d, Y' }}" disabled>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
